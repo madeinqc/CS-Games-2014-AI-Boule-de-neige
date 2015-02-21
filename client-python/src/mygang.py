@@ -31,15 +31,19 @@ class MyGang(world_module.Gang):
 
         a = []
 
-        for player in world.teams[self.teamId].players:
+        i = -1
 
+        for player in world.teams[self.teamId].players:
+            i += 1
+
+            act = actions.IdleAction(player)
             if world.canPickFlag:
                 flag_holder = world.flag.holder
 
                 if flag_holder is None:
                     if helpers.dist(player.point, world.flag.point) <= 10:
-                        pass
                         act = actions.PickFlagAction(player)
+                        pass
                     else:
                         act = helpers.walk_to_flag(player, world)
                 elif flag_holder.team == world.currentTeam:
@@ -55,7 +59,7 @@ class MyGang(world_module.Gang):
                         # walk near flag holder or near base and attack enemy waiting
                         act = helpers.attack_enemy(player, world)
                         if act is None:
-                            if bool(random.getrandbits(1)):
+                            if i % 2 == 0:
                                 act = helpers.walk_to_home(player, world)
                             else:
                                 act = helpers.walk_near_flag(player, world)
@@ -66,12 +70,12 @@ class MyGang(world_module.Gang):
                     #
                     # attack flag holder
                     # walk toward enemy base
-                    act = helpers.attack_flag_holder(player, world)
-                    if act is None:
-                        if bool(random.getrandbits(1)):
+                    if i % 2 == 0 or helpers.dist(player, world.flag.holder.team.startingPosition) < 100:
+                        act = helpers.attack_flag_holder(player, world)
+                        if act is None:
                             act = helpers.walk_to_flag_holder_home(player, world)
-                        else:
-                            act = helpers.walk_near_flag(player, world)
+                    else:
+                        act = helpers.walk_near_flag(player, world)
             else:
                 # attack enemy (that with the less ally nearby)
                 # move near enemy (but not near an ally)
